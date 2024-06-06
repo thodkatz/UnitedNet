@@ -156,7 +156,7 @@ def feature_relevance_chord_plot(shap_values_0_1, unique_ct, var_names_all, all_
             cur_idx.append(_i)
 
         shap_mean = []
-        for sp in [shap_values_0_1[ss] for ss in cur_idx[target_mod]]:
+        for sp in [shap_values_0_1[ss] for ss in range(12)]:
             shap_mean.append(np.mean(np.abs(sp), axis=0))
         shap_mean = np.vstack(shap_mean)
         shap_mean_norm = scaler.fit_transform(shap_mean.T)

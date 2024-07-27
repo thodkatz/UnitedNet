@@ -378,10 +378,7 @@ def run_train(model, dataloader_train, dataloader_val, verbose=False):
 
         if verbose:
             metrics = run_evaluate(model, dataloader_val)
-            print("\n")
-            headers = ["Metrics", "Value"]
-            values = list(metrics.items())
-            print(tabulate(values, headers=headers))
+            tabulate_metrics(metrics)
 
 
 def run_finetune(model, dataloader_finetune, dataloader_val, verbose=False):
@@ -417,12 +414,21 @@ def run_finetune(model, dataloader_finetune, dataloader_val, verbose=False):
 
         if verbose:
             metrics = run_evaluate(model, dataloader_val)
-            print("\n")
-            headers = ["Metrics", "Value"]
-            values = list(metrics.items())
-            print(tabulate(values, headers=headers))
+            tabulate_metrics(metrics)
 
 
+def tabulate_metrics(metrics):
+    print("\n")
+    headers = ["Metrics", "Value"]
+    metric_list = [
+        ["R2", str(metrics["r2"])],
+        ["Confusion Matrix", str(metrics["confusion"])],
+        ["Accuracy", metrics["acc"]],
+        ["Adjusted Rand Index", metrics["ari"]],
+        ["Normalized Mutual Information", metrics["nmi"]]
+    ]
+    print(tabulate(metric_list, headers=headers))
+    
 def run_transfer(
         model, dataloader_train, dataloader_train_and_transfer, dataloader_val, verbose=False
 ):
@@ -464,10 +470,7 @@ def run_transfer(
 
         if verbose:
             metrics = run_evaluate(model, dataloader_val)
-            print("\n")
-            headers = ["Metrics", "Value"]
-            values = list(metrics.items())
-            print(tabulate(values, headers=headers))
+            tabulate_metrics(metrics)
 
 
 def run_evaluate(model, dataloader, give_losses=False, stage='train'):

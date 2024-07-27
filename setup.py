@@ -1,9 +1,10 @@
 from distutils.core import setup
+from setuptools import find_namespace_packages
 
 setup(
     name='UnitedNet',
     version="0.1.0",
-    packages=['src', 'src.configs'],
+    packages=find_namespace_packages(exclude=["tests"]),
     url='',
     license='',
     author='thodkatz',
@@ -14,5 +15,11 @@ setup(
         "ipykernel",
         "scanpy",
         "numpy",
-        "pandas"    ]
+        "pandas",
+        "torch",
+        "tabulate",
+        "scikit-learn",
+        "shap",
+        "mne-connectivity"
+        ]
 )

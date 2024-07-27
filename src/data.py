@@ -129,7 +129,7 @@ def load_obj(path_relec, filename, feature_num, shape_shap, type_rele=False, mod
 def type_specific_mean(adata_x, label_x):
     cluster_prototype_x = {}
     for lb in adata_x.obs[label_x].unique():
-        _sub_expre = adata_x[adata_x.obs[label_x] == lb].X.mean(axis=0).toarray()
+        _sub_expre = adata_x[adata_x.obs[label_x] == lb].X.mean(axis=0)
         cluster_prototype_x[lb] = _sub_expre
     cluster_prototype_x = torch.tensor(np.array(list(cluster_prototype_x.values())))
     return cluster_prototype_x

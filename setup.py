@@ -1,9 +1,10 @@
 from distutils.core import setup
+from setuptools import find_namespace_packages
 
 setup(
     name='UnitedNet',
     version="0.1.0",
-    packages=['src', 'src.configs'],
+    packages=find_namespace_packages(exclude=["tests", "notebooks"]),
     url='',
     license='',
     author='thodkatz',
@@ -11,8 +12,18 @@ setup(
     description='',
     install_requires=[
         "matplotlib",
-        "ipykernel",
         "scanpy",
         "numpy",
-        "pandas"    ]
+        "pandas",
+        "torch",
+        "tabulate",
+        "scikit-learn",
+        "shap<=0.40.0",
+        "mne-connectivity",
+        ],
+    extras_require={
+        "dev": [
+            "jupyter"
+        ]
+    },
 )

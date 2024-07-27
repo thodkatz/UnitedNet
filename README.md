@@ -100,7 +100,7 @@ Additionally, as a trained UnitedNet combines information for both multimodal gr
 ![Alt text](./data/explainablelearning.jpg?raw=true "UnitedNet")
   ```sh 
   # Dissecting the group identification module can enable a group-to-feature relevance analyses
-  from src.modules import submodel_clus
+  from unitednet.modules import submodel_clus
   sub = submodel_clus(model.model).to(model.device)
   # select a set of background examples to take an expectation over
   background = cluster_prototype_features
@@ -110,7 +110,7 @@ Additionally, as a trained UnitedNet combines information for both multimodal gr
   ```
   ```sh 
   # Further dissecting the cross-modal prediction module can enable a group-specific cross-modal feature-to-feature relevance analyses
-  from src.modules import submodel_trans
+  from unitednet.modules import submodel_trans
   sub_0_1 = submodel_trans(model.model,[0,1]).to(model.device)
   e_model_0_1 = shap.DeepExplainer(sub_0_1, background_0_1)
   shap_values_0_1 = e_model_0_1.shap_values(test_type_0_1,check_additivity=True)

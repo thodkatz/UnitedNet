@@ -92,7 +92,7 @@ def save_obj(path_relec, filename, shap_values_X):
     if not os.path.exists(path_relec):
         os.makedirs(path_relec)
     for feature_id in range(len(shap_values_X)):
-        if type(shap_values_X[feature_id]) == list:
+        if isinstance(shap_values_X[feature_id],list):
             for mod in range(len(shap_values_X[feature_id])):
                 target_file_loc = f'{path_relec}/{filename}_mod_{mod}_type_{feature_id}.dat'
                 if os.path.exists(target_file_loc):

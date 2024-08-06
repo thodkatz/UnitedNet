@@ -19,7 +19,7 @@ setup(
         "torch",
         "tabulate",
         "scikit-learn",
-        "shap<=0.45.1",
+        "shap<=0.40.0",
         "mne-connectivity"
         ]
 )

@@ -21,9 +21,4 @@ setup(
         "shap<=0.40.0",
         "mne-connectivity",
         ],
-    extras_require={
-        "dev": [
-            "jupyter"
-        ]
-    },
 )

@@ -11,7 +11,6 @@ setup(
     author_email='',
     description='',
     install_requires=[
-        "matplotlib",
         "scanpy",
         "numpy",
         "pandas",
@@ -21,4 +20,12 @@ setup(
         "shap<=0.40.0",
         "mne-connectivity",
         ],
+    extras_require={
+        "dev": [
+            "matplotlib"
+        ],
+        "torch": [
+            "torch"
+        ]
+    }
 )

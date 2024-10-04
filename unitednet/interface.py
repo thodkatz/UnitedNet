@@ -1,5 +1,6 @@
 from ast import ExtSlice
 from email.policy import default
+from math import exp
 import numpy as np
 import os
 import random
@@ -12,12 +13,17 @@ from unitednet.configs import *
 from unitednet.constants import *
 from unitednet.modules import Model,kaiming_init_weights
 
+
+from torch.utils.tensorboard import SummaryWriter
+
+
 class UnitedNet:
-    def __init__(self, save_path=None, device="cpu", technique=default_config):
+    def __init__(self, experiment_name="unitednet", save_path=None, device="cpu", technique=default_config):
         if save_path is not None:
             os.makedirs(save_path, exist_ok=True)
         self.save_path = save_path
         self.device = torch.device(device)
+        self.experiment_name = experiment_name
         self._create_model_for_technique(technique)
 
     def _set_device(self):
@@ -34,6 +40,7 @@ class UnitedNet:
         self._set_device()
 
     def train(self, adatas_train, save_path=None,adatas_val=None,init_classify=False,verbose=False):
+        writer = SummaryWriter(f'./runs/{self.experiment_name}/train')
         if save_path is not None:
             os.makedirs(save_path, exist_ok=True)
             self.model.save_path = save_path
@@ -62,12 +69,12 @@ class UnitedNet:
         if init_classify:
             self.model.reset_classify()
             self._set_device()
-        run_train(
-            self.model, dataloader_train, dataloader_test,verbose=verbose
-        )
+        run_train(self.model, dataloader_train, dataloader_test, writer)
+        writer.close()
 
 
     def finetune(self, adatas_finetune,save_path=None, adatas_val=None,init_classify=False,verbose=False):
+        writer = SummaryWriter(f'./runs/{self.experiment_name}/finetune')
         if save_path is not None:
             os.makedirs(save_path, exist_ok=True)
             self.model.save_path = save_path
@@ -89,10 +96,12 @@ class UnitedNet:
             self.model.reset_classify()
             self._set_device()
         run_finetune(
-            self.model, dataloader_finetune, dataloader_test,verbose=verbose
+            self.model, dataloader_finetune, dataloader_test, writer
         )
+        writer.close()
 
     def transfer(self, adatas_train, adatas_transfer,init_classify=False,save_path=None, adatas_val=None,verbose=False):
+        writer = SummaryWriter(f'./runs/{self.experiment_name}/transfer')
         if save_path is not None:
             os.makedirs(save_path, exist_ok=True)
             self.model.save_path = save_path
@@ -120,8 +129,9 @@ class UnitedNet:
             dataloader_train,
             dataloader_train_and_transfer,
             dataloader_test,
-            verbose = verbose
+            writer
         )
+        writer.close()
 
     def evaluate(self, adatas,give_losses=False,stage='train'):
         dataloader = create_dataloader(self.model, adatas, shuffle=False,)

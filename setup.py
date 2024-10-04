@@ -19,6 +19,7 @@ setup(
         "scikit-learn",
         "shap<=0.40.0",
         "mne-connectivity",
+        "tensorboard"
         ],
     extras_require={
         "dev": [

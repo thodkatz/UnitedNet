@@ -167,6 +167,7 @@ class Schedule:
             else:
                 losses[loss.name], head_losses = loss(model)
                 total_loss += losses[loss.name]
+            
 
             if train_model and head_losses is not None:
                 accumulated_head_losses = sum_value_lists(
@@ -178,6 +179,7 @@ class Schedule:
             nn.utils.clip_grad_norm_(self.parameters, 25)
             self.optimizer.step()
         return losses
+
 
     def check_and_save_best_model(self, model, losses, best_model_path, verbose=False):
         if self.best_loss_term is None:
@@ -241,7 +243,7 @@ def run_through_dataloader(
         infer_model=False,
         best_model_path=None,
         give_losses=False,
-        verbose=False
+        verbose=False,
 ):
     all_outputs = []
     all_losses = {}
@@ -346,7 +348,7 @@ def get_schedules_by_task(task, model):
     return schedules_by_task[task]
 
 
-def run_train(model, dataloader_train, dataloader_val, verbose=False):
+def run_train(model, dataloader_train, dataloader_val, writer, verbose=False):
     print("training")
     task = model.config[str_train_task]
     loss_weight = model.config[str_train_loss_weight]
@@ -369,19 +371,17 @@ def run_train(model, dataloader_train, dataloader_val, verbose=False):
                 dataloader_val,
                 schedule,
                 best_model_path=f"{str_train}_{str_best}",
-                verbose=verbose
             )
         if epoch % model.config[str_checkpoint] == 0:
             model.save_model(f"{str_train}_epoch_{epoch}")
-            if verbose:
-                print(f"model saved at {model.save_path}/{str_train}_epoch_{epoch}.pt", "\n")
+            print(f"model saved at {model.save_path}/{str_train}_epoch_{epoch}.pt", "\n")
+        
+        logging(writer, model, dataloader_val, epoch)
+        
+        
+    
 
-        if verbose:
-            metrics = run_evaluate(model, dataloader_val)
-            tabulate_metrics(metrics)
-
-
-def run_finetune(model, dataloader_finetune, dataloader_val, verbose=False):
+def run_finetune(model, dataloader_finetune, dataloader_val, writer, verbose=False):
     print("finetuning")
     task = model.config[str_finetune_task]
     loss_weight = model.config[str_finetune_loss_weight]
@@ -405,18 +405,35 @@ def run_finetune(model, dataloader_finetune, dataloader_val, verbose=False):
                 dataloader_val,
                 schedule,
                 best_model_path=f"{str_finetune}_{str_best}",
-                verbose=verbose
             )
         if epoch % model.config[str_checkpoint] == 0:
             model.save_model(f"{str_finetune}_epoch_{epoch}")
-            if verbose:
-                print(f"model saved at {model.save_path}/{str_finetune}_epoch_{epoch}.pt", "\n")
+            print(f"model saved at {model.save_path}/{str_finetune}_epoch_{epoch}.pt", "\n")
 
-        if verbose:
-            metrics = run_evaluate(model, dataloader_val)
-            tabulate_metrics(metrics)
+        logging(writer, model, dataloader_val, epoch)  
 
 
+    
+def logging(writer, model, data, epoch):
+    metrics = run_evaluate(model, data)
+    tabulate_metrics(metrics)
+    losses = run_evaluate(model, data, give_losses=True)
+    
+    writer.add_scalar("Accuracy", metrics['acc'], epoch)
+    writer.add_scalar("Adjusted Rand Index", metrics['ari'], epoch)
+    writer.add_scalar("Normalized Mutual Information", metrics['nmi'], epoch)
+    for task, loss_per_task in losses.items():
+        total_loss = 0
+        for loss_name, value in loss_per_task.items():
+            total_loss += value
+            writer.add_scalar(f"Losses/{task}/{loss_name}", value, epoch)
+        writer.add_scalar(f"Losses/{task}/total", total_loss, epoch)
+    r2 = metrics['r2']
+    for modality_idx, r2_metrics in enumerate(r2):
+        for r2_idx, r2_value in enumerate(r2_metrics):
+            writer.add_scalar(f"R2/{modality_idx}/{r2_idx}", r2_value, epoch)
+    writer.flush()
+    
 def tabulate_metrics(metrics):
     print("\n")
     headers = ["Metrics", "Value"]
@@ -430,7 +447,7 @@ def tabulate_metrics(metrics):
     print(tabulate(metric_list, headers=headers))
     
 def run_transfer(
-        model, dataloader_train, dataloader_train_and_transfer, dataloader_val, verbose=False
+        model, dataloader_train, dataloader_train_and_transfer, dataloader_val, writer, verbose=False
 ):
     print("transferring")
     task = model.config[str_transfer_task]
@@ -460,18 +477,13 @@ def run_transfer(
                 dataloader_val,
                 schedule,
                 best_model_path=f"{str_transfer}_{str_best}",
-                verbose=verbose
             )
 
         if epoch % model.config[str_checkpoint] == 0:
             model.save_model(f"{str_transfer}_epoch_{epoch}")
-            if verbose:
-                print(f"model saved at {model.save_path}/{str_transfer}_epoch_{epoch}.pt", "\n")
+            print(f"model saved at {model.save_path}/{str_transfer}_epoch_{epoch}.pt", "\n")
 
-        if verbose:
-            metrics = run_evaluate(model, dataloader_val)
-            tabulate_metrics(metrics)
-
+        logging(writer, model, dataloader_val, epoch)
 
 def run_evaluate(model, dataloader, give_losses=False, stage='train'):
     model.eval()

@@ -211,7 +211,7 @@ def run_schedule(runner):
             verbose=False
     ):
         if train_model and schedule is not None and schedule.name == str_classification:
-            for _ in range(len(dataloader.dataset.modalities)*2):
+            for _ in range(len(dataloader.dataset.modalities)*2): # why?
                 outputs = runner(
                     model,
                     dataloader,

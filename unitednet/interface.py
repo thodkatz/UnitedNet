@@ -17,7 +17,7 @@ class UnitedNet:
         if save_path is not None:
             os.makedirs(save_path, exist_ok=True)
         self.save_path = save_path
-        self.device = device
+        self.device = torch.device(device)
         self._create_model_for_technique(technique)
 
     def _set_device(self):
@@ -140,6 +140,7 @@ class UnitedNet:
         return run_predict_label(self.model, dataloader)
 
     def load_model(self, path, device='cuda:0'):
-        self.model = torch.load(path,map_location=torch.device(device))
-        self.model.device_in_use = device
+        self.device = torch.device(device)
+        self.model = torch.load(path,map_location=self.device)
+        self.model.device_in_use = self.device
 
